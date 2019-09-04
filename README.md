@@ -4,6 +4,10 @@ lvm-protect is an open-source obfuscation device that was made by SmartNode#1211
 # What is broken about this?
 As this provides excellent beginner obfuscation, the main problem with this obfuscator is that it doesn't work for larger scripts (and has issues with more than simple loop) which hopefully maybe someday someone is able to apply fixes to this.
 
+# What do I need before using this?
+- LuaForWindows (https://github.com/rjpcomputing/luaforwindows/releases)
+- Node.JS (https://nodejs.org/en/)
+
 # How do I use it?
 - Place your code in 'code.lua'
 - Run 'obfuscate.bat'
