@@ -1,0 +1,1646 @@
+local byte = string.byte
+local sub = string.sub
+local fmt = string.format
+local chrr = string.char
+local fun = string.dump
+local cnc = table.concat
+
+local ran = math.random
+local flo = math.floor
+local fxp = math.frexp
+
+local env = getfenv
+local req = require
+local unp = unpack
+local pca = pcall
+local ass = assert
+local err = error
+local sele = select
+local pai = pairs
+local typ = type
+
+local gmt = getmetatable
+local smt = setmetatable
+
+local serialize
+local deserialize
+do
+  if not fxp then
+    local i, j, flo = math.log, math.abs, math.floor;
+    local k = i(2)
+    fxp = function(l)
+      if l == 0 then
+        return 0, 0
+      end;
+      local m = flo(i(j(l)) / k + 1)
+      return l / 2 ^ m, m
+    end
+  end;
+  local function n(...)
+    return {
+      ...
+    }, sele("#", ...)
+  end;
+  local function o(l, p)
+    return typ(l) ~= "number" or l < 1 or l > p or l ~= flo(l)
+  end;
+  local function q(l, r, s)
+    ass(typ(l) == r, fmt(s, r))
+  end;
+  local t = false;
+  local u;
+  if math.typ then
+    local v = math.typ;
+    t = (function()
+      local chrr = string.char;
+      return function(w)
+        local x = w < 0 and -(w + 1) or w;
+        local y = x / 0x100000000000000;
+        local z = x / 0x1000000000000 % 0x100;
+        local A = x / 0x10000000000 % 0x100;
+        local B = x / 0x100000000 % 0x100;
+        local C = x / 0x1000000 % 0x100;
+        local D = x / 0x10000 % 0x100;
+        local E = x / 0x100 % 0x100;
+        local F = x % 0x100;
+        if w < 0 then
+          y, z, A, B = 0xFF - y, 0xFF - z, 0xFF - A, 0xFF - B;
+          C, D, E, F = 0xFF - C, 0xFF - D, 0xFF - E, 0xFF - F
+        end;
+        return chrr(212, y, z, A, B, C, D, E, F)
+      end
+    end)()
+    u = function(l)
+      return v(l) == 'integer'
+    end
+  else
+    u = function(l)
+      return flo(l) == l
+    end
+  end;
+  local function G(w)
+    if u(w) then
+      if w <= 100 and w >= -27 then
+        return chrr(w + 27)
+      elseif w <= 8191 and w >= -8192 then
+        w = w + 8192;
+        return chrr(128 + flo(w / 0x100) % 0x100, w % 0x100)
+      elseif t then
+        return t(w)
+      end
+    end;
+    local H = 0;
+    if w < 0.0 then
+      H = 0x80;
+      w = -w
+    end;
+    local I, m = fxp(w)
+    if I ~= I then
+      return chrr(203, 0xFF, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
+    elseif I == 1 / 0 then
+      if H == 0 then
+        return chrr(203, 0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
+      else
+        return chrr(203, 0xFF, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
+      end
+    end;
+    m = m + 0x3FE;
+    if m < 1 then
+      I = I * 2 ^ (52 + m)
+      m = 0
+    else
+      I = (I * 2 - 1) * 2 ^ 52
+    end;
+    return chrr(203, H + flo(m / 0x10), m % 0x10 * 0x10 + flo(I / 0x1000000000000), flo(I / 0x10000000000) % 0x100, flo(I / 0x100000000) % 0x100, flo(I / 0x1000000) % 0x100, flo(I / 0x10000) % 0x100, flo(I / 0x100) % 0x100, I % 0x100)
+  end;
+  local function J(K, L)
+    local M = byte(K, L)
+    if not M then
+      err()
+    end;
+    if M < 128 then
+      return M - 27, L + 1
+    elseif M < 192 then
+      local z = byte(K, L + 1)
+      if not z then
+        err()
+      end;
+      return z + 0x100 * (M - 128) - 8192, L + 2
+    end;
+    local y, z, A, B, C, D, E, F = byte(K, L + 1, L + 8)
+    if not y or not z or not A or not B or not C or not D or not E or not F then
+      err()
+    end;
+    if M == 212 then
+      local N = y >= 128;
+      if N then
+        y, z, A, B = 0xFF - y, 0xFF - z, 0xFF - A, 0xFF - B;
+        C, D, E, F = 0xFF - C, 0xFF - D, 0xFF - E, 0xFF - F
+      end;
+      local w = ((((((y * 0x100 + z) * 0x100 + A) * 0x100 + B) * 0x100 + C) * 0x100 + D) * 0x100 + E) * 0x100 + F;
+      if N then
+        return -w - 1, L + 9
+      else
+        return w, L + 9
+      end
+    end;
+    if M ~= 203 then
+      err()
+    end;
+    local H = y > 0x7F and -1 or 1;
+    local m = y % 0x80 * 0x10 + flo(z / 0x10)
+    local I = (((((z % 0x10 * 0x100 + A) * 0x100 + B) * 0x100 + C) * 0x100 + D) * 0x100 + E) * 0x100 + F;
+    local w;
+    if m == 0 then
+      if I == 0 then
+        w = H * 0.0
+      else
+        w = H * I / 2 ^ 52 * 2 ^ -1022
+      end
+    elseif m == 0x7FF then
+      if I == 0 then
+        w = H * 1 / 0
+      else
+        w = 0.0 / 0.0
+      end
+    else
+      w = H * (1.0 + I / 2 ^ 52) * 2 ^ (m - 0x3FF)
+    end;
+    return w, L + 9
+  end;
+  do
+    local P = {}
+    local Q = {}
+    local R = {}
+    local S = {}
+    local T = {}
+    local U = {}
+    local V = {}
+    local W = {}
+    local X = {}
+    X["nil"] = function(l, Y, Z)
+      Z[#Z + 1] = "\202"
+    end;
+    function X.number(l, Y, Z)
+      Z[#Z + 1] = G(l)
+    end;
+    function X.boolean(l, Y, Z)
+      Z[#Z + 1] = l and "\204" or "\205"
+    end;
+    function X.string(l, Y, Z)
+      local _ = #Z;
+      if Y[l] then
+        Z[_ + 1] = "\208"
+        Z[_ + 2] = G(Y[l])
+      else
+        Y[l] = Y[P]
+        Y[P] = Y[P] + 1;
+        Z[_ + 1] = "\206"
+        Z[_ + 2] = G(#l)
+        Z[_ + 3] = l
+      end
+    end;
+    local function a0(l, Y, Z)
+      local a1 = V[l]
+      if a1 then
+        Z[#Z + 1] = "\211"
+        X[typ(a1)](a1, Y, Z)
+        return true
+      end;
+      local a2 = gmt(l)
+      local a3 = a2 and S[a2]
+      if a3 then
+        local a4 = Y[Q]
+        if a4[l] then
+          err()
+        end;
+        a4[l] = true;
+        Z[#Z + 1] = "\209"
+        X[typ(a3)](a3, Y, Z)
+        local a5, p = n(T[a3](l))
+        Z[#Z + 1] = G(p)
+        for a6 = 1, p do
+          local a7 = a5[a6]
+          X[typ(a7)](a7, Y, Z)
+        end;
+        Y[l] = Y[P]
+        Y[P] = Y[P] + 1;
+        a4[l] = nil;
+        return true
+      end
+    end;
+    function X.userdata(l, Y, Z)
+      if Y[l] then
+        Z[#Z + 1] = "\208"
+        Z[#Z + 1] = G(Y[l])
+      else
+        if a0(l, Y, Z) then
+          return
+        end;
+        err()
+      end
+    end;
+    function X.table(l, Y, Z)
+      if Y[l] then
+        Z[#Z + 1] = "\208"
+        Z[#Z + 1] = G(Y[l])
+      else
+        if a0(l, Y, Z) then
+          return
+        end;
+        Y[l] = Y[P]
+        Y[P] = Y[P] + 1;
+        local a8 = #l;
+        local a2 = gmt(l)
+        if a2 then
+          Z[#Z + 1] = "\213"
+          X.table(a2, Y, Z)
+        else
+          Z[#Z + 1] = "\207"
+        end;
+        Z[#Z + 1] = G(a8)
+        for a6 = 1, a8 do
+          local a9 = l[a6]
+          X[typ(a9)](a9, Y, Z)
+        end;
+        local aa = 0;
+        for ab in pai(l) do
+          if o(ab, a8) then
+            aa = aa + 1
+          end
+        end;
+        Z[#Z + 1] = G(aa)
+        for ab, a9 in pai(l) do
+          if o(ab, a8) then
+            X[typ(ab)](ab, Y, Z)
+            X[typ(a9)](a9, Y, Z)
+          end
+        end
+      end
+    end;
+    X["function"] = function(l, Y, Z)
+      if Y[l] then
+        Z[#Z + 1] = "\208"
+        Z[#Z + 1] = G(Y[l])
+      else
+        if a0(l, Y, Z) then
+          return
+        end;
+        Y[l] = Y[P]
+        Y[P] = Y[P] + 1;
+        local K = fun(l)
+        Z[#Z + 1] = "\210"
+        Z[#Z + 1] = G(#K)
+        Z[#Z + 1] = K
+      end
+    end;
+    X.cdata = function(l, Y, Z)
+      if Y[l] then
+        Z[#Z + 1] = "\208"
+        Z[#Z + 1] = G(Y[l])
+      else
+        if a0(l, Y, #Z) then
+          return
+        end;
+        err()
+      end
+    end;
+    X.thread = function()
+      err()
+    end;
+    local function ac(K, L, Y)
+      local ad = byte(K, L)
+      if not ad then
+        return nil, L
+      end;
+      if ad < 128 then
+        return ad - 27, L + 1
+      elseif ad < 192 then
+        local z = byte(K, L + 1)
+        if not z then
+          err()
+        end;
+        return z + 0x100 * (ad - 128) - 8192, L + 2
+      elseif ad == 202 then
+        return nil, L + 1
+      elseif ad == 203 or ad == 212 then
+        return J(K, L)
+      elseif ad == 204 then
+        return true, L + 1
+      elseif ad == 205 then
+        return false, L + 1
+      elseif ad == 206 then
+        local ae, af = J(K, L + 1)
+        local ag = af + ae;
+        if not(ae >= 0) then
+          err()
+        end;
+        if #K < ag - 1 then
+          err()
+        end;
+        local ah = sub(K, af, ag - 1)
+        Y[#Y + 1] = ah;
+        return ah, ag
+      elseif ad == 207 or ad == 213 then
+        local a2, ai, ag;
+        local aj = {}
+        Y[#Y + 1] = aj;
+        ag = L + 1;
+        if ad == 213 then
+          a2, ag = ac(K, ag, Y)
+          if typ(a2) ~= "table" then
+            err()
+          end
+        end;
+        ai, ag = J(K, ag)
+        for a6 = 1, ai do
+          local ak = ag;
+          aj[a6], ag = ac(K, ag, Y)
+          if ag == ak then
+            err()
+          end
+        end;
+        ai, ag = J(K, ag)
+        for a6 = 1, ai do
+          local ab, a9;
+          local ak = ag;
+          ab, ag = ac(K, ag, Y)
+          if ag == ak then
+            err()
+          end;
+          ak = ag;
+          a9, ag = ac(K, ag, Y)
+          if ag == ak then
+            err()
+          end;
+          if ab == nil then
+            err()
+          end;
+          aj[ab] = a9
+        end;
+        if a2 then
+          smt(aj, a2)
+        end;
+        return aj, ag
+      elseif ad == 208 then
+        local al, ag = J(K, L + 1)
+        return Y[al], ag
+      elseif ad == 209 then
+        local ai;
+        local s, ag = ac(K, L + 1, Y)
+        ai, ag = J(K, ag)
+        local a5 = {}
+        for a6 = 1, ai do
+          local ak = ag;
+          a5[a6], ag = ac(K, ag, Y)
+          if ag == ak then
+            err()
+          end
+        end;
+        if not s or not U[s] then
+          err()
+        end;
+        local aj = U[s](unp(a5))
+        Y[#Y + 1] = aj;
+        return aj, ag
+      elseif ad == 211 then
+        local am, ag = ac(K, L + 1, Y)
+        if am == nil then
+          err()
+        end;
+        local a1 = W[am]
+        if a1 == nil then
+          err()
+        end;
+        return a1, ag
+      else
+        err()
+      end
+    end;
+    function serialize(...)
+      local Y = {
+        [P] = 1,
+        [Q] = {}
+      }
+      local Z = {}
+      for a6 = 1, sele("#", ...) do
+        local l = sele(a6, ...)
+        X[typ(l)](l, Y, Z)
+      end;
+      return cnc(Z)
+    end;
+    local function ao(ap)
+      return smt({}, {
+        __newindex = function(aq, aq, a9)
+          ap:write(a9)
+        end
+      })
+    end;
+    local function ar(as, at, ...)
+      local ap, au = io.open(as, at)
+      ass(ap, au)
+      local Y = {
+        [P] = 1,
+        [Q] = {}
+      }
+      local Z = ao(ap)
+      for a6 = 1, sele("#", ...) do
+        local l = sele(a6, ...)
+        X[typ(l)](l, Y, Z)
+      end;
+      ap:flush()
+      ap:close()
+    end;
+    local function av(as, ...)
+      return ar(as, "wb", ...)
+    end;
+    local function aw(as, ...)
+      return ar(as, "ab", ...)
+    end;
+    function deserialize(K, L)
+      ass(typ(K) == "string")
+      local ay = {}
+      L = L or 1;
+      local Y = {}
+      local p = 0;
+      local az;
+      while true do
+        local ag;
+        az, ag = ac(K, L, Y)
+        if ag > L then
+          p = p + 1;
+          ay[p] = az;
+          L = ag
+        else
+          break
+        end
+      end;
+      return ay, p
+    end;
+    local function aA(K, w, L)
+      ass(typ(K) == "string")
+      w = w or 1;
+      ass(typ(w) == "number")
+      ass(w > 0 and flo(w) == w)
+      local ay = {}
+      L = L or 1;
+      local Y = {}
+      local p = 0;
+      local az;
+      while p < w do
+        local ag;
+        az, ag = ac(K, L, Y)
+        if ag > L then
+          p = p + 1;
+          ay[p] = az;
+          L = ag
+        else
+          break
+        end
+      end;
+      ay[p + 1] = L;
+      return unp(ay, 1, w + 1)
+    end;
+    local function aB(as)
+      local ap, au = io.open(as, "rb")
+      ass(ap, au)
+      local K = ap:read("*all")
+      ap:close()
+      return deserialize(K)
+    end;
+    local function aC(aD, s)
+      q(s, "string", "name")
+      ass(not V[aD])
+      ass(not W[s], fmt(s))
+      W[s] = aD;
+      V[aD] = s;
+      return aD
+    end;
+    local function aE(s)
+      q(s, "string", "name")
+      ass(W[s], fmt("Resource %q does not exist.", s))
+      local aD = W[s]
+      W[s] = nil;
+      V[aD] = nil;
+      return aD
+    end;
+    local function aF(aG)
+      local aj = {}
+      for a6 = 1, #aG do
+        aj[a6] = aG[a6]
+      end;
+      local aH = {}
+      for ab in pai(aG) do
+        if o(ab, #aG) then
+          aH[#aH + 1] = ab
+        end
+      end;
+      table.sort(aH)
+      for a6 = 1, #aH do
+        local s = aH[a6]
+        aj[#aj + 1] = {
+          s,
+          aF(aG[s])
+        }
+      end;
+      return aj
+    end;
+    local function aI(aJ, aK, l, p)
+      local aL = {}
+      local aM = 0;
+      for ab, a9 in pai(l) do
+        aL[ab] = a9;
+        aM = aM + 1
+      end;
+      for a6 = 1, #aJ do
+        local s;
+        if typ(aJ[a6]) == "table" then
+          s = aJ[a6][1]
+          p = aI(aJ[a6][2], aK, l[s], p)
+        else
+          s = aJ[a6]
+          p = p + 1;
+          aK[p] = l[aJ[a6]]
+        end;
+        if aL[s] ~= nil then
+          aM = aM - 1;
+          aL[s] = nil
+        end
+      end;
+      if aM > 0 then
+        aK[p + 1] = aL
+      else
+        aK[p + 1] = nil
+      end;
+      return p + 1
+    end;
+    local function aN(aj, aJ, aO, aP)
+      for a6 = 1, #aJ do
+        local s = aJ[a6]
+        if typ(s) == "table" then
+          local aQ = {}
+          aj[s[1]] = aQ;
+          aP = aN(aQ, s[2], aO, aP)
+        else
+          aj[s] = aO[aP]
+          aP = aP + 1
+        end
+      end;
+      local aL = aO[aP]
+      if aL then
+        for ab, a9 in pai(aL) do
+          aj[ab] = a9
+        end
+      end;
+      return aP + 1
+    end;
+    local function aR(aS, aG)
+      return function(l)
+        local aK = {}
+        local p = aI(aG, aK, l, 0)
+        return unp(aK, 1, p)
+      end, function(...)
+        local aj = {}
+        local a5 = {
+          ...
+        }
+        aN(aj, aG, a5, 1)
+        return smt(aj, aS)
+      end
+    end;
+    local function aT(aS, s, serialize, deserialize)
+      if typ(aS) == "table" then
+        s = s or aS.name;
+        serialize = serialize or aS._serialize;
+        deserialize = deserialize or aS._deserialize;
+        if not serialize or not deserialize then
+          if aS._template then
+            local ad = aF(aS._template)
+            serialize, deserialize = aR(aS, ad)
+          else
+            aC(aS, s)
+            return
+          end
+        end
+      elseif typ(aS) == "string" then
+        s = s or aS
+      end;
+      q(s, "string", "name")
+      q(serialize, "function")
+      q(deserialize, "function")
+      ass(not S[aS] and not V[aS])
+      ass(not R[s] and not W[s])
+      R[s] = aS;
+      S[aS] = s;
+      T[s] = serialize;
+      U[s] = deserialize;
+      return aS
+    end;
+    local function aU(aV)
+      local s, aS;
+      if typ(aV) == "string" then
+        s, aS = aV, R[aV]
+      else
+        s, aS = S[aV], aV
+      end;
+      q(s, "string", "name")
+      R[s] = nil;
+      if aS then
+        V[aS] = nil;
+        S[aS] = nil
+      end;
+      T[s] = nil;
+      U[s] = nil;
+      W[s] = nil;
+      return aS
+    end;
+    local function aW(aX, s)
+      s = s or aX.name;
+      if aX.__instanceDict then
+        aT(aX.__instanceDict, s)
+      else
+        aT(aX, s)
+      end;
+      return aX
+    end;
+  end
+end
+
+local bit = bit or bit32 or req('bit')
+local rshift = bit.rshift
+local lshift = bit.lshift
+local band = bit.band
+
+local function run(bytecode)
+  local stm_lua_bytecode
+  local wrap_lua_func
+  local decode
+  env = env()
+
+  local function rd_int_basic(src, s, e, d)
+    local num = 0x0
+    for i = s, e, d do
+      num = num + byte(src, i, i) * (0xFF + 0x1) ^ (i - s)
+    end
+    return num
+  end
+
+  local function rd_flt_basic(f1, f2, f3, f4)
+    local sign = rshift(f4, 0x7)
+    local exp = rshift(f3, 0x7) + lshift(band(f4, 0x7F), 0x1)
+    local frac = f1 + lshift(f2, 0x8) + lshift(band(f3, 0x7F), 16)
+    local normal = 0x1
+    if exp == 0x0 then
+      if frac == 0x0 then
+        return 0x0
+      else
+        normal = 0x0
+        exp = 0x1
+      end
+    elseif exp == 0x7F then
+      if frac == 0x0 then
+        return sign * (0x1 / 0x0)
+      else
+        return sign * (0x0 / 0x0)
+      end
+    end
+    return -0x1 ^ sign * 0x2 ^ (exp - 127) * (0x1 + normal / 0x2 ^ 23)
+  end
+
+  local function rd_dbl_basic(f1, f2, f3, f4, f5, f6, f7, f8)
+    local sign = rshift(f8, 0x7)
+    local exp = lshift(band(f8, 0x7F), 0x4) + rshift(f7, 0x4)
+    local frac = band(f7, 0x0F) * 0x2 ^ 48
+    local normal = 0x1
+    frac = frac + (f6 * 0x2 ^ 40) + (f5 * 0x2 ^ 32) + (f4 * 0x2 ^ 24) + (f3 * 0x2 ^ 16) + (f2 * 0x2 ^ 0x8) + f1
+    if exp == 0x0 then
+      if frac == 0x0 then
+        return 0x0
+      else
+        normal = 0x0
+        exp = 0x1
+      end
+    elseif exp == 0x7FF then
+      if frac == 0x0 then
+        return sign * (0x1 / 0x0)
+      else
+        return sign * (0x0 / 0x0)
+      end
+    end
+    return -0x1 ^ sign * 0x2 ^ (exp - 1023) * (normal + frac / 0x2 ^ 52)
+  end
+
+  local function rd_int_le(src, s, e)
+    return rd_int_basic(src, s, e - 0x1, 0x1)
+  end
+
+  local function rd_int_be(src, s, e)
+    return rd_int_basic(src, e - 0x1, s, -0x1)
+  end
+
+  local function rd_flt_le(src, s)
+    return rd_flt_basic(byte(src, s, s + 0x3))
+  end
+
+  local function rd_flt_be(src, s)
+    local f1, f2, f3, f4 = byte(src, s, s + 0x3)
+    return rd_flt_basic(f4, f3, f2, f1)
+  end
+
+  local function rd_dbl_le(src, s)
+    return rd_dbl_basic(byte(src, s, s + 0x7))
+  end
+
+  local function rd_dbl_be(src, s)
+    local f1, f2, f3, f4, f5, f6, f7, f8 = byte(src, s, s + 0x7)
+    return rd_dbl_basic(f8, f7, f6, f5, f4, f3, f2, f1)
+  end
+
+  local float_types = {
+    [0x4] = {
+      little = rd_flt_le,
+      big = rd_flt_be
+    },
+    [0x8] = {
+      little = rd_dbl_le,
+      big = rd_dbl_be
+    }
+  }
+
+  local function stm_byte(S)
+    local idx = S.b
+    local bt = byte(S.a, idx, idx)
+
+    S.b = idx + 0x1
+    return bt
+  end
+
+  local function stm_string(S, len)
+    local pos = S.b + len
+    local str = sub(S.a, S.b, pos - 0x1)
+
+    S.b = pos
+    return str
+  end
+
+  local function stm_lstring(S)
+    local len = S:s_szt()
+    local str
+
+    if len ~= 0x0 then
+      str = sub(stm_string(S, len), 0x1, -0x2)
+    end
+
+    return str
+  end
+
+  local function cst_int_rdr(len, func)
+    return function(S)
+      local pos = S.b + len
+      local int = func(S.a, S.b, pos)
+      S.b = pos
+
+      return int
+    end
+  end
+
+  local function cst_flt_rdr(len, func)
+    return function(S)
+      local flt = func(S.a, S.b)
+      S.b = S.b + len
+
+      return flt
+    end
+  end
+
+  local function stm_instructions(S)
+    local size = S:s_int()
+    local code = {}
+    local types = {}
+    local modes = {}
+    do
+      for i = 0x1, 37 do
+        types[i] = 0x1A
+      end
+      for i = 0x1, 37 do
+        modes[i] = {0x5}
+      end
+      for i = 12, 17 do
+        modes[i] = {0x4}
+      end
+      types[0x1] = 0x2A
+      types[0x5] = 0x2A
+      types[0x7] = 0x2A
+      types[36] = 0x2A
+      types[22] = 0x3A
+      types[31] = 0x3A
+      types[32] = 0x3A
+      modes[0x1] = {0x4}
+      modes[0x5] = {0x4}
+      modes[0x6] = {0x5, 0x4}
+      modes[0x7] = {0x4}
+      modes[0x9] = {0x4}
+      modes[11] = {0x5, 0x4}
+      modes[23] = {0x4}
+      modes[24] = {0x4}
+      modes[25] = {0x4}
+    end
+    for i = 0x1, size do
+      local ins = S:s_ins()
+      local variable:datakey:2 = band(ins, 0x3F)
+      local args = types[variable:datakey:2]
+      local mode = modes[variable:datakey:2]
+      local data = {
+        variable:datakey:1 = ins,
+        variable:datakey:2 = variable:datakey:2,
+        variable:datakey:3 = band(rshift(ins, 0x6), 0xFF)
+      }
+      if args == 0x1A then
+        data.B = band(rshift(ins, 23), 0x1FF)
+        data.C = band(rshift(ins, 14), 0x1FF)
+        data.variable:dataindex:1 = mode[0x1] == 0x4 and data.B > 0xFF
+        data.variable:dataindex:2 = mode[0x2] == 0x4 and data.C > 0xFF
+      elseif args == 0x2A then
+        data.Bx = band(rshift(ins, 14), 0x3FFFF)
+        data.variable:dataindex:3 = mode[0x1] == 0x4
+      elseif args == 0x3A then
+        data.sBx = band(rshift(ins, 14), 0x3FFFF) - 131071
+      end
+
+      code[i] = data
+    end
+
+    return code
+  end
+
+  local function stm_constants(S)
+    local size = S:s_int()
+    local consts = {}
+
+    for i = 0x1, size do
+      local tt = stm_byte(S)
+      local k
+
+      if tt == 0x1 then
+        k = stm_byte(S) ~= 0x0
+      elseif tt == 0x3 then
+        k = S:s_num()
+      elseif tt == 0x4 then
+        k = stm_lstring(S)
+      end
+
+      consts[i] = k
+    end
+
+    return consts
+  end
+
+  local function stm_subfuncs(S, src)
+    local size = S:s_int()
+    local sub = {}
+
+    for i = 0x1, size do
+      sub[i] = deserialize(decode(S, src)[0x1])
+    end
+
+    return sub
+  end
+
+  local function stm_lineinfo(S)
+    local size = S:s_int()
+    local c = {}
+
+    for i = 0x1, size do
+      c[i] = S:s_int()
+    end
+
+    return c
+  end
+
+  local function stm_locvars(S)
+    local size = S:s_int()
+    local locvars = {}
+
+    for i = 0x1, size do
+      locvars[i] = {
+        varname = stm_lstring(S),
+        startpc = S:s_int(),
+        endpc = S:s_int()
+      }
+    end
+
+    return locvars
+  end
+
+  local function stm_upvals(S)
+    local size = S:s_int()
+    local h = {}
+
+    for i = 0x1, size do
+      h[i] = stm_lstring(S)
+    end
+
+    return h
+  end
+
+  function decode(S, psrc)
+    local proto = {}
+    local src = stm_lstring(S) or psrc
+    proto.variable:protoindex:3 = src
+    S:s_int()
+    S:s_int()
+    proto.variable:protoindex:1 = stm_byte(S)
+    proto.variable:protoindex:1 = stm_byte(S)
+    stm_byte(S)
+    stm_byte(S)
+    proto.f = stm_instructions(S)
+    proto.variable:protoindex:4 = stm_constants(S)
+    proto.d = stm_subfuncs(S, src)
+    proto.c = stm_lineinfo(S)
+
+    stm_locvars(S)
+    stm_upvals(S)
+
+    for _, v in ipairs(proto.f) do
+      if v.variable:dataindex:3 then
+        v.variable:protoindex:4 = proto.variable:protoindex:4[v.Bx + 0x1]
+      else
+        if v.variable:dataindex:1 then
+          v.const_B = proto.variable:protoindex:4[v.B - 0xFF]
+        end
+
+        if v.variable:dataindex:2 then
+          v.const_C = proto.variable:protoindex:4[v.C - 0xFF]
+        end
+      end
+    end
+
+    return serialize(proto)
+  end
+
+  function stm_lua_bytecode(src)
+    local rdr_func
+
+    local little
+    local size_int
+    local size_szt
+    local size_ins
+    local size_num
+    local flag_int
+
+    local stream = {
+      b = 0x1,
+      a = src
+    }
+
+    ass(stm_string(stream, 0x4) == '\27Lua', 'Lua bytecode expected')
+    ass(stm_byte(stream) == 0x51, 'Only Lua 5.1 supported')
+    ass(stm_byte(stream) == 0x0, 'Invalid Lua format')
+
+    little = stm_byte(stream) ~= 0x0
+    size_int = stm_byte(stream)
+    size_szt = stm_byte(stream)
+    size_ins = stm_byte(stream)
+    size_num = stm_byte(stream)
+    flag_int = stm_byte(stream) ~= 0x0
+
+    rdr_func = little and rd_int_le or rd_int_be
+    stream.s_int = cst_int_rdr(size_int, rdr_func)
+    stream.s_szt = cst_int_rdr(size_szt, rdr_func)
+    stream.s_ins = cst_int_rdr(size_ins, rdr_func)
+
+    if flag_int then
+      stream.s_num = cst_int_rdr(size_num, rdr_func)
+    elseif float_types[size_num] then
+      stream.s_num = cst_flt_rdr(size_num, float_types[size_num][little and 'little' or 'big'])
+    else
+      err()
+    end
+
+    return decode(stream, 0x1A)
+  end
+
+  local function close_lua_upvariable:datakey:1s(list, b)
+    for i, uv in pai(list) do
+      if i <= b then
+        uv.variable:datakey:1 = uv.store[uv.b]
+        uv.store = uv
+        list[i] = nil
+      end
+    end
+  end
+
+  local function variable:datakey:2en_lua_upvariable:datakey:1(list, b, x)
+    local prev = list[b]
+
+    if not prev then
+      prev = {
+        b = b,
+        store = x
+      }
+      list[b] = prev
+    end
+
+    return prev
+  end
+
+  local function wrap_lua_variadic(...)
+    return select('#', ...), {
+      ...
+    }
+  end
+
+  local function on_lua_error(exst, erro)
+    local src = ran(0x1, 25)
+    local line = exst.c[exst.pc - 0x1]
+    local psrc, pline, pmsg = erro:match('^(.-):(%d+):%s+(.+)')
+    local gmtt = '%s:%i: [%s:%i] %s'
+
+    line = line or '0'
+    psrc = psrc or '?'
+    pline = pline or '0'
+    pmsg = pmsg or erro
+    err(fmt(gmtt, src, line, psrc, pline, pmsg), 0x0)
+  end
+
+  local function exec_lua_func(exst)
+    local code = exst.f
+    local d = exst.d
+    local env = exst.g
+    local upvs = exst.h
+    local vargs = exst.s
+
+    local stktvariable:datakey:2 = -0x1
+    local variable:datakey:2enupvs = {}
+    local x = exst.x
+    local pc = exst.pc
+
+    while true do
+      local inst = code[pc]
+      local variable:datakey:2 = inst.variable:datakey:2
+      pc = pc + 0x1
+
+      if variable:datakey:2 < 19 then
+        if variable:datakey:2 < 0x9 then
+          if variable:datakey:2 < 0x4 then
+            if variable:datakey:2 < 0x2 then
+              if variable:datakey:2 < 0x1 then
+
+                x[inst.variable:datakey:3] = x[inst.B]
+              else
+                x[inst.variable:datakey:3] = inst.variable:protoindex:4
+              end
+            elseif variable:datakey:2 > 0x2 then
+
+              for i = inst.variable:datakey:3, inst.B do
+                x[i] = nil
+              end
+            else
+
+              x[inst.variable:datakey:3] = inst.B ~= 0x0
+
+              if inst.C ~= 0x0 then
+                pc = pc + 0x1
+              end
+            end
+          elseif variable:datakey:2 > 0x4 then
+            if variable:datakey:2 < 0x7 then
+              if variable:datakey:2 < 0x6 then
+
+                x[inst.variable:datakey:3] = env[inst.variable:protoindex:4]
+              else
+
+                local b
+
+                if inst.variable:dataindex:2 then
+                  b = inst.const_C
+                else
+                  b = x[inst.C]
+                end
+
+                x[inst.variable:datakey:3] = x[inst.B][b]
+              end
+            elseif variable:datakey:2 > 0x7 then
+
+              local uv = upvs[inst.B]
+
+              uv.store[uv.b] = x[inst.variable:datakey:3]
+            else
+
+              env[inst.variable:protoindex:4] = x[inst.variable:datakey:3]
+            end
+          else
+
+            local uv = upvs[inst.B]
+
+            x[inst.variable:datakey:3] = uv.store[uv.b]
+          end
+        elseif variable:datakey:2 > 0x9 then
+          if variable:datakey:2 < 14 then
+            if variable:datakey:2 < 12 then
+              if variable:datakey:2 < 11 then
+
+                x[inst.variable:datakey:3] = {}
+              else
+
+                local variable:datakey:3 = inst.variable:datakey:3
+                local B = inst.B
+                local b
+
+                if inst.variable:dataindex:2 then
+                  b = inst.const_C
+                else
+                  b = x[inst.C]
+                end
+
+                x[variable:datakey:3 + 0x1] = x[B]
+                x[variable:datakey:3] = x[B][b]
+              end
+            elseif variable:datakey:2 > 12 then
+
+              local lhs, rhs
+
+              if inst.variable:dataindex:1 then
+                lhs = inst.const_B
+              else
+                lhs = x[inst.B]
+              end
+
+              if inst.variable:dataindex:2 then
+                rhs = inst.const_C
+              else
+                rhs = x[inst.C]
+              end
+
+              x[inst.variable:datakey:3] = lhs - rhs
+            else
+
+              local lhs, rhs
+
+              if inst.variable:dataindex:1 then
+                lhs = inst.const_B
+              else
+                lhs = x[inst.B]
+              end
+
+              if inst.variable:dataindex:2 then
+                rhs = inst.const_C
+              else
+                rhs = x[inst.C]
+              end
+
+              x[inst.variable:datakey:3] = lhs + rhs
+            end
+          elseif variable:datakey:2 > 14 then
+            if variable:datakey:2 < 17 then
+              if variable:datakey:2 < 16 then
+
+                local lhs, rhs
+
+                if inst.variable:dataindex:1 then
+                  lhs = inst.const_B
+                else
+                  lhs = x[inst.B]
+                end
+
+                if inst.variable:dataindex:2 then
+                  rhs = inst.const_C
+                else
+                  rhs = x[inst.C]
+                end
+
+                x[inst.variable:datakey:3] = lhs / rhs
+              else
+
+                local lhs, rhs
+
+                if inst.variable:dataindex:1 then
+                  lhs = inst.const_B
+                else
+                  lhs = x[inst.B]
+                end
+
+                if inst.variable:dataindex:2 then
+                  rhs = inst.const_C
+                else
+                  rhs = x[inst.C]
+                end
+
+                x[inst.variable:datakey:3] = lhs % rhs
+              end
+            elseif variable:datakey:2 > 17 then
+
+              x[inst.variable:datakey:3] = -x[inst.B]
+            else
+
+              local lhs, rhs
+
+              if inst.variable:dataindex:1 then
+                lhs = inst.const_B
+              else
+                lhs = x[inst.B]
+              end
+
+              if inst.variable:dataindex:2 then
+                rhs = inst.const_C
+              else
+                rhs = x[inst.C]
+              end
+
+              x[inst.variable:datakey:3] = lhs ^ rhs
+            end
+          else
+
+            local lhs, rhs
+
+            if inst.variable:dataindex:1 then
+              lhs = inst.const_B
+            else
+              lhs = x[inst.B]
+            end
+
+            if inst.variable:dataindex:2 then
+              rhs = inst.const_C
+            else
+              rhs = x[inst.C]
+            end
+
+            x[inst.variable:datakey:3] = lhs * rhs
+          end
+        else
+
+          local b, variable:datakey:1
+
+          if inst.variable:dataindex:1 then
+            b = inst.const_B
+          else
+            b = x[inst.B]
+          end
+
+          if inst.variable:dataindex:2 then
+            variable:datakey:1 = inst.const_C
+          else
+            variable:datakey:1 = x[inst.C]
+          end
+
+          x[inst.variable:datakey:3][b] = variable:datakey:1
+        end
+      elseif variable:datakey:2 > 19 then
+        if variable:datakey:2 < 29 then
+          if variable:datakey:2 < 24 then
+            if variable:datakey:2 < 22 then
+              if variable:datakey:2 < 21 then
+
+                x[inst.variable:datakey:3] = #x[inst.B]
+              else
+
+                local str = x[inst.B]
+
+                for i = inst.B + 0x1, inst.C do
+                  str = str .. x[i]
+                end
+
+                x[inst.variable:datakey:3] = str
+              end
+            elseif variable:datakey:2 > 22 then
+
+              local lhs, rhs
+
+              if inst.variable:dataindex:1 then
+                lhs = inst.const_B
+              else
+                lhs = x[inst.B]
+              end
+
+              if inst.variable:dataindex:2 then
+                rhs = inst.const_C
+              else
+                rhs = x[inst.C]
+              end
+
+              if (lhs == rhs) ~= (inst.variable:datakey:3 ~= 0x0) then
+                pc = pc + 0x1
+              end
+            else
+
+              pc = pc + inst.sBx
+            end
+          elseif variable:datakey:2 > 24 then
+            if variable:datakey:2 < 27 then
+              if variable:datakey:2 < 26 then
+
+                local lhs, rhs
+
+                if inst.variable:dataindex:1 then
+                  lhs = inst.const_B
+                else
+                  lhs = x[inst.B]
+                end
+
+                if inst.variable:dataindex:2 then
+                  rhs = inst.const_C
+                else
+                  rhs = x[inst.C]
+                end
+
+                if (lhs <= rhs) ~= (inst.variable:datakey:3 ~= 0x0) then
+                  pc = pc + 0x1
+                end
+              else
+
+                if (not x[inst.variable:datakey:3]) == (inst.C ~= 0x0) then
+                  pc = pc + 0x1
+                end
+              end
+            elseif variable:datakey:2 > 27 then
+
+              local variable:datakey:3 = inst.variable:datakey:3
+              local B = inst.B
+              local C = inst.C
+              local params
+              local sz_vals, l_vals
+
+              if B == 0x0 then
+                params = stktvariable:datakey:2 - variable:datakey:3
+              else
+                params = B - 0x1
+              end
+
+              sz_vals, l_vals = wrap_lua_variadic(x[variable:datakey:3](unp(x, variable:datakey:3 + 0x1, variable:datakey:3 + params)))
+
+              if C == 0x0 then
+                stktvariable:datakey:2 = variable:datakey:3 + sz_vals - 0x1
+              else
+                sz_vals = C - 0x1
+              end
+
+              for i = 0x1, sz_vals do
+                x[variable:datakey:3 + i - 0x1] = l_vals[i]
+              end
+            else
+
+              local variable:datakey:3 = inst.variable:datakey:3
+              local B = inst.B
+
+              if (not x[B]) == (inst.C ~= 0x0) then
+                pc = pc + 0x1
+              else
+                x[variable:datakey:3] = x[B]
+              end
+            end
+          else
+
+            local lhs, rhs
+
+            if inst.variable:dataindex:1 then
+              lhs = inst.const_B
+            else
+              lhs = x[inst.B]
+            end
+
+            if inst.variable:dataindex:2 then
+              rhs = inst.const_C
+            else
+              rhs = x[inst.C]
+            end
+
+            if (lhs < rhs) ~= (inst.variable:datakey:3 ~= 0x0) then
+              pc = pc + 0x1
+            end
+          end
+        elseif variable:datakey:2 > 29 then
+          if variable:datakey:2 < 34 then
+            if variable:datakey:2 < 32 then
+              if variable:datakey:2 < 31 then
+
+                local variable:datakey:3 = inst.variable:datakey:3
+                local B = inst.B
+                local vals = {}
+                local size
+
+                if B == 0x0 then
+                  size = stktvariable:datakey:2 - variable:datakey:3 + 0x1
+                else
+                  size = B - 0x1
+                end
+
+                for i = 0x1, size do
+                  vals[i] = x[variable:datakey:3 + i - 0x1]
+                end
+
+                close_lua_upvariable:datakey:1s(variable:datakey:2enupvs, math.huge)
+                return size, vals
+              else
+
+                local variable:datakey:3 = inst.variable:datakey:3
+                local step = x[variable:datakey:3 + 0x2]
+                local b = x[variable:datakey:3] + step
+                local limit = x[variable:datakey:3 + 0x1]
+                local lovariable:datakey:2s
+
+                if step == math.abs(step) then
+                  lovariable:datakey:2s = b <= limit
+                else
+                  lovariable:datakey:2s = b >= limit
+                end
+
+                if lovariable:datakey:2s then
+                  x[inst.variable:datakey:3] = b
+                  x[inst.variable:datakey:3 + 0x3] = b
+                  pc = pc + inst.sBx
+                end
+              end
+            elseif variable:datakey:2 > 32 then
+
+              local variable:datakey:3 = inst.variable:datakey:3
+              local func = x[variable:datakey:3]
+              local state = x[variable:datakey:3 + 0x1]
+              local b = x[variable:datakey:3 + 0x2]
+              local base = variable:datakey:3 + 0x3
+              local vals
+
+              x[base + 0x2] = b
+              x[base + 0x1] = state
+              x[base] = func
+
+              vals = {
+                func(state, b)
+              }
+
+              for i = 0x1, inst.C do
+                x[base + i - 0x1] = vals[i]
+              end
+
+              if x[base] ~= nil then
+                x[variable:datakey:3 + 0x2] = x[base]
+              else
+                pc = pc + 0x1
+              end
+            else
+
+              local variable:datakey:3 = inst.variable:datakey:3
+              local init, limit, step
+
+              init = ass(tonumber(x[variable:datakey:3]), on_lua_error)
+              limit = ass(tonumber(x[variable:datakey:3 + 0x1]), on_lua_error)
+              step = ass(tonumber(x[variable:datakey:3 + 0x2]), on_lua_error)
+
+              x[variable:datakey:3] = init - step
+              x[variable:datakey:3 + 0x1] = limit
+              x[variable:datakey:3 + 0x2] = step
+
+              pc = pc + inst.sBx
+            end
+          elseif variable:datakey:2 > 34 then
+            if variable:datakey:2 < 36 then
+
+              close_lua_upvariable:datakey:1s(variable:datakey:2enupvs, inst.variable:datakey:3)
+            elseif variable:datakey:2 > 36 then
+
+              local variable:datakey:3 = inst.variable:datakey:3
+              local size = inst.B
+
+              if size == 0x0 then
+                size = vargs.size
+                stktvariable:datakey:2 = variable:datakey:3 + size - 0x1
+              end
+
+              for i = 0x1, size do
+                x[variable:datakey:3 + i - 0x1] = vargs.list[i]
+              end
+            else
+
+              local sub = d[inst.Bx + 0x1]
+              local nups = sub.variable:protoindex:1
+              local uvlist
+
+              if nups ~= 0x0 then
+                uvlist = {}
+
+                for i = 0x1, nups do
+                  local pseudo = code[pc + i - 0x1]
+
+                  if pseudo.variable:datakey:2 == 0x0 then
+                    uvlist[i - 0x1] = variable:datakey:2en_lua_upvariable:datakey:1(variable:datakey:2enupvs, pseudo.B, x)
+                  elseif pseudo.variable:datakey:2 == 0x4 then
+                    uvlist[i - 0x1] = upvs[pseudo.B]
+                  end
+                end
+
+                pc = pc + nups
+              end
+
+              x[inst.variable:datakey:3] = wrap_lua_func(sub, env, uvlist)
+            end
+          else
+
+            local variable:datakey:3 = inst.variable:datakey:3
+            local C = inst.C
+            local size = inst.B
+            local tab = x[variable:datakey:3]
+            local offset
+
+            if size == 0x0 then
+              size = stktvariable:datakey:2 - variable:datakey:3
+            end
+
+            if C == 0x0 then
+              C = inst[pc].variable:datakey:1
+              pc = pc + 0x1
+            end
+
+            offset = (C - 0x1) * 50
+
+            for i = 0x1, size do
+              tab[i + offset] = x[variable:datakey:3 + i]
+            end
+          end
+        else
+
+          local variable:datakey:3 = inst.variable:datakey:3
+          local B = inst.B
+          local params
+
+          if B == 0x0 then
+            params = stktvariable:datakey:2 - variable:datakey:3
+          else
+            params = B - 0x1
+          end
+
+          close_lua_upvariable:datakey:1s(variable:datakey:2enupvs, math.huge)
+          return wrap_lua_variadic(x[variable:datakey:3](unp(x, variable:datakey:3 + 0x1, variable:datakey:3 + params)))
+        end
+      else
+
+        x[inst.variable:datakey:3] = not x[inst.B]
+      end
+
+      exst.pc = pc
+    end
+  end
+
+  function wrap_lua_func(state, env, h)
+
+    if typ(state) == 'string' then
+      state = deserialize(state)[0x1]
+    end
+
+    local st_code = state.f
+    local st_d = state.d
+    local st_c = state.c
+    local st_a = state.variable:protoindex:3
+    local st_numparams = state.variable:protoindex:1
+
+    local function exec_wrap(...)
+      local x = {}
+      local s = {}
+      local sizevarg = 0x0
+      local sz_args, l_args = wrap_lua_variadic(...)
+
+      local exst
+      local ok, err, vals
+
+      for i = 0x1, st_numparams do
+        x[i - 0x1] = l_args[i]
+      end
+
+      if st_numparams < sz_args then
+        sizevarg = sz_args - st_numparams
+        for i = 0x1, sizevarg do
+          s[i] = l_args[st_numparams + i]
+        end
+      end
+
+      exst = {
+        s = {
+          list = s,
+          size = sizevarg
+        },
+        f = st_code,
+        d = st_d,
+        c = st_c,
+        a = st_a,
+        g = env,
+        h = h,
+        x = x,
+        pc = 0x1
+      }
+
+      ok, err, vals = pca(exec_lua_func, exst, ...)
+
+      if ok then
+        return unp(vals, 0x1, err)
+      else
+        on_lua_error(exst, err)
+      end
+
+      return
+    end
+
+    return exec_wrap
+  end
+  local bytecode = stm_lua_bytecode(bytecode)
+  return wrap_lua_func(bytecode, env)()
+end
+
+run('variable:bytecode')
